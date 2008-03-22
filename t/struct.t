@@ -23,9 +23,10 @@ is $writer->header_file,"Employee_struct.h";
 
 $writer->struct(<<'END');
     typedef struct employee {
-        char *      name;
-        double      salary;
+        char *      name;    /* this is a comment */
+        double      salary;  /* this is another comment */
         int         id;
+        // and this is a comment
     };
 END
 
@@ -112,3 +113,30 @@ eq_or_diff join("", <$fh>), <<"END";
 typedef employee *     Some__Employee;
 END
 
+
+
+{
+    my $struct = XS::Writer->new(
+        package     => 'Something'
+    );
+    
+    $struct->struct(<<'END');
+        struct foo {
+            char    *thing;
+        };
+END
+
+    is_deeply $struct->struct_elements, { thing => "char *" },
+        "can parse 'char *foo' style";
+}
+
+
+# Tests for packages with more than one set of ::
+{
+    my $writer = XS::Writer->new(
+        package     => 'Foo::Bar::Baz::Bim'
+    );
+    
+    is $writer->xs_file, 'lib/Foo/Bar/Baz/Bim_struct.xsi';
+    is $writer->xs_type, 'Foo__Bar__Baz__Bim';
+}

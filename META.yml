@@ -1,6 +1,6 @@
 ---
 name: XS-Writer
-version: 0.01
+version: 0.02
 author:
   - 'Michael G Schwern E<lt>schwern@pobox.comE<gt>'
 abstract: Module to write some XS for you
@@ -19,7 +19,7 @@ provides:
     file: lib/XS/Writer.pm
   XS::Writer:
     file: lib/XS/Writer.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

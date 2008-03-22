@@ -3,7 +3,7 @@ package XS::Writer;
 use strict;
 use warnings;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Basename;
 use File::Path;
@@ -39,7 +39,10 @@ XS::Writer - Module to write some XS for you
     use XS::Writer;
 
     my $writer = XS::Writer->new(
-        package   => 'Some::Employee'
+        package   => 'Some::Employee',
+
+        # defines the employee struct
+        include   => '#include "employee.h"',
     );
 
     $writer->struct(<<'END');
@@ -59,9 +62,6 @@ XS::Writer - Module to write some XS for you
     #include "EXTERN.h"
     #include "perl.h"
     #include "XSUB.h"
-
-    /* Whatever defines the employee struct */
-    #include "employee.h"
 
     MODULE = Some::Employee  PACKAGE = Some::Employee
 
@@ -144,7 +144,7 @@ has 'xs_type',
     default     => sub {
         my $self = shift;
         my $type = $self->package;
-        $type =~ s/::/__/;
+        $type =~ s/::/__/g;
         return $type;
     }
 ;
@@ -162,7 +162,7 @@ has 'xs_file',
     default     => sub {
         my $self = shift;
         my $file = $self->package;
-        $file =~ s{::}{/};
+        $file =~ s{::}{/}g;
         return "lib/${file}_struct.xsi";
     }
 ;
@@ -258,8 +258,8 @@ sub struct {
     my $typedef = shift;
 
     # Cleanup
-    $typedef =~ s{/\* .* \*/}{};    # strip C comments
-    $typedef =~ s{//.*}{};          # strip C++ comments
+    $typedef =~ s{/\* .* \*/}{}g;    # strip C comments
+    $typedef =~ s{//.*}{}g;          # strip C++ comments
     $typedef->strip_ws;
 
     $typedef =~ s/^typedef\s+//;        # optional "typedef"
@@ -274,8 +274,8 @@ sub struct {
 
     # All we should have left is "type key;"
     my %elements = map {
-                       /^(.*)\s+(\w+)$/ ?
-                           ($2 => $1) : ()
+                       /^(.*?)\s*(\w+)$/ ?
+                            ($2 => $1) : ();
                    }
                    map { $_->strip_ws;  $_->squeeze_ws }
                        split /;/, $typedef;
